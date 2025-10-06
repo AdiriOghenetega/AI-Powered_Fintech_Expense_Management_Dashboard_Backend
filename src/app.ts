@@ -63,10 +63,17 @@ app.use(helmet({
       styleSrc: ["'self'", "'unsafe-inline'"],
       scriptSrc: ["'self'"],
       imgSrc: ["'self'", "data:", "https:"],
-      connectSrc: ["'self'", "wss:", "ws:"],
+      connectSrc: [
+        "'self'", 
+        "wss:", 
+        "ws:",
+        "https://ai-powered-expense-manager.vercel.app",
+        "https://*.vercel.app"
+      ],
     },
   },
   crossOriginEmbedderPolicy: false,
+  crossOriginResourcePolicy: { policy: "cross-origin" }
 }));
 
 // CORS configuration with optimization
@@ -74,26 +81,31 @@ app.use(cors({
   origin: function(origin, callback) {
     const allowedOrigins = [
       'http://localhost:3000',
-      'https://ai-powered-expense-manager.vercel.app'
+      'http://localhost:3001',
+      'https://ai-powered-expense-manager.vercel.app',
+      'https://ai-powered-fintech-expense-management.onrender.com'
     ];
 
-    // Allow requests with no origin
+    // Allow requests with no origin (like mobile apps or curl requests)
     if (!origin) return callback(null, true);
 
     // Check if origin is allowed or matches Vercel preview pattern
     if (allowedOrigins.includes(origin) || 
-        origin.match(/https:\/\/ai-powered-expense-manager-.*\.vercel\.app$/)) {
+        origin.match(/^https:\/\/ai-powered-expense-manager-.*\.vercel\.app$/)) {
       callback(null, true);
     } else {
-      // Log for debugging but don't throw error
+      // Log for debugging but allow in production
       console.warn(`Blocked CORS request from: ${origin}`);
-      callback(null, false); // Reject without error
+      callback(new Error('Not allowed by CORS'));  // Changed to throw error
     }
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
-  maxAge: 86400
+  exposedHeaders: ['X-Request-ID'],  // Add this if you need to access custom headers
+  maxAge: 86400,  // Cache preflight requests for 24 hours
+  preflightContinue: false,
+  optionsSuccessStatus: 204
 }));
 
 // Enhanced compression
@@ -222,6 +234,9 @@ app.get('/stats', (req, res) => {
     }
   });
 });
+
+// Handle OPTIONS requests explicitly
+app.options('*', cors());
 
 // API routes
 app.use('/api/auth', authRoutes);
