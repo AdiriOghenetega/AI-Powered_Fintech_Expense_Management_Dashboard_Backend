@@ -71,11 +71,29 @@ app.use(helmet({
 
 // CORS configuration with optimization
 app.use(cors({
-  origin: ['http://localhost:3000','https://ai-powered-expense-manager.vercel.app'],
+  origin: function(origin, callback) {
+    const allowedOrigins = [
+      'http://localhost:3000',
+      'https://ai-powered-expense-manager.vercel.app'
+    ];
+
+    // Allow requests with no origin
+    if (!origin) return callback(null, true);
+
+    // Check if origin is allowed or matches Vercel preview pattern
+    if (allowedOrigins.includes(origin) || 
+        origin.match(/https:\/\/ai-powered-expense-manager-.*\.vercel\.app$/)) {
+      callback(null, true);
+    } else {
+      // Log for debugging but don't throw error
+      console.warn(`Blocked CORS request from: ${origin}`);
+      callback(null, false); // Reject without error
+    }
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
-  maxAge: 86400, // 24 hours preflight cache
+  maxAge: 86400
 }));
 
 // Enhanced compression
