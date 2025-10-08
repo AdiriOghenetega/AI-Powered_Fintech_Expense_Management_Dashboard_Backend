@@ -63,17 +63,9 @@ app.use(helmet({
       styleSrc: ["'self'", "'unsafe-inline'"],
       scriptSrc: ["'self'"],
       imgSrc: ["'self'", "data:", "https:"],
-      connectSrc: [
-        "'self'", 
-        "wss:", 
-        "ws:",
-        "https://ai-powered-expense-manager.vercel.app",
-        "https://*.vercel.app"
-      ],
     },
   },
-  crossOriginEmbedderPolicy: false,
-  crossOriginResourcePolicy: { policy: "cross-origin" }
+  crossOriginEmbedderPolicy: false
 }));
 
 // Allow all origins
