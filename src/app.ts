@@ -90,8 +90,8 @@ app.use(cors({
     const allowedOrigins = [
       'http://localhost:3000',
       'http://localhost:3001',
-      'https://ai-powered-expense-manager.vercel.app',
-      'https://ai-powered-fintech-expense-manageme.vercel.app',
+      'https://ai-powered-expense-manager.vercel.app/',
+      'https://ai-powered-fintech-expense-manageme.vercel.app/',
       'https://ai-powered-fintech-expense-management.onrender.com'
     ];
     
