@@ -91,8 +91,8 @@ app.use(cors({
       'http://localhost:3000',
       'http://localhost:3001',
       'http://localhost:3002',
-      'https://ai-powered-expense-manager.vercel.app/',
-      'https://ai-powered-fintech-expense-manageme.vercel.app/',
+      'https://ai-powered-expense-manager.vercel.app',
+      'https://ai-powered-fintech-expense-manageme.vercel.app',
       'https://ai-powered-fintech-expense-management.onrender.com'
     ];
     
