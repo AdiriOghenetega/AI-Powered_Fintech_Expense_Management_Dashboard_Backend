@@ -63,13 +63,64 @@ app.use(helmet({
       styleSrc: ["'self'", "'unsafe-inline'"],
       scriptSrc: ["'self'"],
       imgSrc: ["'self'", "data:", "https:"],
+      connectSrc: [
+        "'self'", 
+        "wss:", 
+        "ws:",
+        "https://ai-powered-expense-manager.vercel.app",
+        "https://*.vercel.app"
+      ],
     },
   },
-  crossOriginEmbedderPolicy: false
+  crossOriginEmbedderPolicy: false,
+  crossOriginResourcePolicy: { policy: "cross-origin" }
 }));
 
-// Allow all origins
-app.use(cors());
+// CORS configuration with optimization
+app.use(cors({
+  origin: (origin, callback) => {
+    console.log('CORS request from origin:', origin || 'no-origin');
+    
+    // Always allow requests with no origin
+    if (!origin) {
+      console.log('No origin - allowing (mobile app/direct request)');
+      return callback(null, true);
+    }
+    
+    const allowedOrigins = [
+      'http://localhost:3000',
+      'http://localhost:3001',
+      'http://localhost:3002',
+      'https://ai-powered-expense-manager.vercel.app/',
+      'https://ai-powered-fintech-expense-manageme.vercel.app/',
+      'https://ai-powered-fintech-expense-management.onrender.com'
+    ];
+    
+    // Check if origin matches any allowed origin
+    const isAllowed = allowedOrigins.some(allowed => origin === allowed) ||
+                     origin.endsWith('.vercel.app'); // Allow all Vercel deployments
+    
+    if (isAllowed) {
+      console.log('Allowing origin:', origin);
+      return callback(null, true);
+    }
+    
+    console.log('CORS rejected origin:', origin);
+    callback(new Error('Not allowed by CORS'));
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH', 'HEAD'],
+  allowedHeaders: [
+    'Origin',
+    'X-Requested-With', 
+    'Content-Type', 
+    'Accept',
+    'Authorization',
+    'Cache-Control',
+    'Pragma'
+  ],
+  optionsSuccessStatus: 200
+}));
 
 // Enhanced compression
 app.use(compression({
