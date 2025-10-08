@@ -78,34 +78,52 @@ app.use(helmet({
 
 // CORS configuration with optimization
 app.use(cors({
-  origin: function(origin, callback) {
-    const allowedOrigins = [
-      'http://localhost:3000',
-      'http://localhost:3001',
-      'https://ai-powered-expense-manager.vercel.app',
-      'https://ai-powered-fintech-expense-management.onrender.com'
-    ];
-
-    // Allow requests with no origin (like mobile apps or curl requests)
-    if (!origin) return callback(null, true);
-
-    // Check if origin is allowed or matches Vercel preview pattern
-    if (allowedOrigins.includes(origin) || 
-        origin.match(/^https:\/\/ai-powered-expense-manager-.*\.vercel\.app$/)) {
-      callback(null, true);
-    } else {
-      // Log for debugging but allow in production
-      console.warn(`Blocked CORS request from: ${origin}`);
-      callback(new Error('Not allowed by CORS'));  // Changed to throw error
+  origin: (origin, callback) => {
+    console.log('CORS request from origin:', origin || 'no-origin');
+    
+    // Always allow requests with no origin (mobile apps, Postman, direct requests)
+    if (!origin) {
+      console.log('No origin - allowing (mobile app/direct request)');
+      return callback(null, true);
     }
+    
+    const allowedOrigins = process.env.NODE_ENV === 'production' 
+      ? [
+          'http://localhost:3000',
+          'http://localhost:3001',
+          'https://ai-powered-expense-manager.vercel.app',
+          'https://ai-powered-fintech-expense-management.onrender.com'
+        ]
+      : true; // Allow all origins in development
+    
+    // Development mode - be very permissive
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('Development mode - allowing all origins');
+      return callback(null, true);
+    }
+    
+    // Production mode - check against whitelist
+    if (Array.isArray(allowedOrigins) && allowedOrigins.includes(origin)) {
+      console.log('Production - allowing whitelisted origin:', origin);
+      return callback(null, true);
+    }
+    
+    // Reject in production if not whitelisted
+    console.log('CORS rejected origin:', origin);
+    callback(null, false); // Don't throw error, just reject
   },
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
-  exposedHeaders: ['X-Request-ID'],  // Add this if you need to access custom headers
-  maxAge: 86400,  // Cache preflight requests for 24 hours
-  preflightContinue: false,
-  optionsSuccessStatus: 204
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH', 'HEAD'],
+  allowedHeaders: [
+    'Origin',
+    'X-Requested-With', 
+    'Content-Type', 
+    'Accept',
+    'Authorization',
+    'Cache-Control',
+    'Pragma'
+  ],
+  optionsSuccessStatus: 200 // For legacy browser support
 }));
 
 // Enhanced compression
